@@ -141,18 +141,18 @@ class gridUtmDialog(QtWidgets.QDialog, FORM_CLASS):
             self.y_min.setText(str(Minbbox[1].strip()))
             self.x_max.setText(str(Maxbbox[0].strip()))
             self.y_max.setText(str(Maxbbox[1].strip()))
-            # transforme en fichier Laborde pour calculer en metric
+            # transforme en couche UTM pour calculer en metric
             parameter = {'INPUT': xsource,
                          'TARGET_CRS': 'EPSG:32738', 'OUTPUT': rep_shpLaborde}
             processing.run("qgis:reprojectlayer", parameter)
             layer2 = QgsVectorLayer(rep_shpLaborde,  'shpLaborde', "ogr")
             box_laborde = layer2.extent().toString()
-            # crs_eto2=layer2.crs().authid()
+            
             # XMin, YMin : XMax, Ymax
             bbox2 = box_laborde.split(":")
             Minbbox = bbox2[0].split(",")
             Maxbbox = bbox2[1].split(",")
-            # pour calculer en laborde
+            # pour calculer en UTM
             self.x_min_2.setText(str(Minbbox[0].strip()))
             self.y_min_2.setText(str(Minbbox[1].strip()))
             self.x_max_2.setText(str(Maxbbox[0].strip()))
@@ -167,7 +167,7 @@ class gridUtmDialog(QtWidgets.QDialog, FORM_CLASS):
             self.y_min.setText(str(Minbbox[1].strip()))
             self.x_max.setText(str(Maxbbox[0].strip()))
             self.y_max.setText(str(Maxbbox[1].strip()))
-            # pour calculer en laborde
+            # pour calculer en UTM
             self.x_min_2.setText(str(Minbbox[0].strip()))
             self.y_min_2.setText(str(Minbbox[1].strip()))
             self.x_max_2.setText(str(Maxbbox[0].strip()))
@@ -213,7 +213,7 @@ class gridUtmDialog(QtWidgets.QDialog, FORM_CLASS):
             layer_list = []
             layers = QgsProject.instance().mapLayers().values()
             for layer in layers:
-                # pour verifier si vecteur
+                # pour verifier la couche
                 # if layer.type() == QgsMapLayer.VectorLayer or QgsMapLayer.rasterLayer:
                 if layer.type() == QgsMapLayer.VectorLayer:
                     # layers = self.iface.activeLayer()
@@ -229,7 +229,8 @@ class gridUtmDialog(QtWidgets.QDialog, FORM_CLASS):
         global dx
         global dy
         minx,maxx,miny,maxy = float(self.x_min_2.toPlainText()), float(self.x_max_2.toPlainText()),float(self.y_min_2.toPlainText()), float(self.y_max_2.toPlainText())
-        # trouver dimension grille par format et orientation
+        
+        # trouver dimension de la grille par format et orientation
         if self.cbxFormat.currentText() =='A4':
             if self.cbxOrientation.currentText() =='Portrait':
                 dx = 0.21 * int(self.cbxEchelle.currentText())
@@ -266,10 +267,11 @@ class gridUtmDialog(QtWidgets.QDialog, FORM_CLASS):
                 dx = 10.188 * int(self.cbxEchelle.currentText())
                 dy = 0.594 * int(self.cbxEchelle.currentText())
         
-        # trouver nombre grille
+        # trouver le nombre de la grille
         nbrx = int(math.ceil(abs(maxx - minx)/dx))
         nbry = int(math.ceil(abs(maxy - miny)/dy))
-        # afficher pour informations
+        
+        # Pour informations à affichier
         totGrid = nbrx * nbry
         self.lbl_Gridxy.setText(str(dx) + " x " + str(dy))
         self.lbl_Nbregrid.setText("Total: " + str(totGrid) + " dont :" + str(nbrx) + " x " + str(nbry))
@@ -277,15 +279,15 @@ class gridUtmDialog(QtWidgets.QDialog, FORM_CLASS):
     def Executer(self):
         repEto = self.rep_shpSave.toPlainText()
         if repEto != '':
-            # recuperer le nom de fichier
+            # recuperer le nom du fichier
             infos_shp = QtCore.QFileInfo(repEto)
             Nomfile = infos_shp.baseName()
-            #Creer grid
+            #Creer la grille
             minx,maxx,miny,maxy = float(self.x_min.toPlainText()), float(self.x_max.toPlainText()),float(self.y_min.toPlainText()), float(self.y_max.toPlainText())
             nx = int(math.ceil(abs(maxx - minx)/dx))
             ny = int(math.ceil(abs(maxy - miny)/dy))
 
-            # Definir le polygone
+            # Si on a choisi de type géometrie polygone
             if self.radio_pg.isChecked():
                 id=0
                 # Ajouter marge pour la dernière case si avec marge
@@ -319,9 +321,6 @@ class gridUtmDialog(QtWidgets.QDialog, FORM_CLASS):
                 w.field("y_x")
                 w.field("x") 
                 w.field("y")
-                #w.field("nom_grid")
-                #w.field("nom_col") # x
-                #w.field("nom_row") #y
                 for i in range(ny):
                     for j in range(nx):
                         id+=1
@@ -382,7 +381,7 @@ class gridUtmDialog(QtWidgets.QDialog, FORM_CLASS):
                 w.save(repEto)
 
 
-            # Definir le point
+            # Si on a choisi de type géometrie point
             if self.radio_pt.isChecked():
                 id=0
                 w = shp.Writer(shp.POINT)
