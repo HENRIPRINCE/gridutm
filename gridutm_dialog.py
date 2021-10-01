@@ -290,6 +290,7 @@ class gridUtmDialog(QtWidgets.QDialog, FORM_CLASS):
             # Si on a choisi de type géometrie polygone
             if self.radio_pg.isChecked():
                 id=0
+                rang_y =0
                 # Ajouter marge pour la dernière case si avec marge
                 if self.chbxMarge.isChecked() == True:
                     if self.xMarge.toPlainText() !='' and self.yMarge.toPlainText() !='':
@@ -318,9 +319,10 @@ class gridUtmDialog(QtWidgets.QDialog, FORM_CLASS):
                 w.field("distance")
                 w.field("sens")
                 w.field("format")
-                w.field("y_x")
                 w.field("x") 
                 w.field("y")
+
+                #for i in reversed(range(ny)):
                 for i in range(ny):
                     for j in range(nx):
                         id+=1
@@ -371,11 +373,16 @@ class gridUtmDialog(QtWidgets.QDialog, FORM_CLASS):
                             w.poly(parts)
 
                         # charger shapefile
+                        if self.axe_haut.isChecked():
+                            rang_y = i
+                        if self.axe_bas.isChecked():
+                            rang_y = ny - (i+1)
+                        
                         w.record(id, 
                         str(self.cbxEchelle.currentText()),
                         str(self.cbxOrientation.currentText()),
                         str(self.cbxFormat.currentText()),
-                        str(i) +"_" + str(j), j, i)
+                        j, rang_y)
                 
                 # sauvegarder shapefile
                 w.save(repEto)
@@ -384,21 +391,26 @@ class gridUtmDialog(QtWidgets.QDialog, FORM_CLASS):
             # Si on a choisi de type géometrie point
             if self.radio_pt.isChecked():
                 id=0
+                rang_y=0
                 w = shp.Writer(shp.POINT)
                 w.autoBalance = 1
                 w.field("id")
                 w.field("distance")
                 w.field("sens")
                 w.field("format")
-                w.field("y_x")
                 w.field("x") 
                 w.field("y")
+
+                #for i in reversed(range(ny)):
                 for i in range(ny):
                     for j in range(nx):
                         id+=1
                         pos_x = minx + (dx*j)
                         pos_y = maxy - (dy*i)
-                        val_yx = str(i) +"_" + str(j)
+                        if self.axe_haut.isChecked():
+                            rang_y = i
+                        if self.axe_bas.isChecked():
+                            rang_y = ny - (i+1)
 
                         #charger shapefile
                         w.point(float(pos_x), float(pos_y))
@@ -406,7 +418,7 @@ class gridUtmDialog(QtWidgets.QDialog, FORM_CLASS):
                         str(self.cbxEchelle.currentText()),
                         str(self.cbxOrientation.currentText()),
                         str(self.cbxFormat.currentText()),
-                        val_yx, j, i)
+                        j, rang_y)
                         
                 # sauvegarder shapefile
                 w.save(repEto)
